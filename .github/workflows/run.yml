@@ -14,6 +14,12 @@ jobs:
       - name: Build Docker image
         run: |
           docker build . -t compiler-rinha
+      - name: Generate Tests
+        run: |
+          cargo install rinha
+          for rinha_file in tests/*.rinha; do
+              rinha $rinha_file > $rinha_file.json
+          done
       - name: Test ast.json
         run: |
           for json_file in tests/*.json; do

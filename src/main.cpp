@@ -6,7 +6,6 @@
 #include "context.h"
 
 int main(int argc, char **argv) {
-	std::cout << argv[1] << std::endl;
 	std::ifstream fss(argv[1]);
 	Json::Value	 json;
 	Json::Reader reader;
