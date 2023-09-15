@@ -1,3 +1,2 @@
 #!/bin/bash
-cd build
-./CompilerRinha
+./build/CompilerRinha $1

@@ -81,7 +81,7 @@ std::string getStringValueOfTerm(Ast::Term value, Context<Ast::Term>& ctx) {
 			}
 			response += ">";
 		case Ast::CallKind:
-			response = "Calling ";
+			response = "Call("+getStringValueOfTerm(std::static_pointer_cast<Ast::Call>(value)->callee, ctx) + ")";
 		case Ast::BinaryKind:
 			response += getStringValueOfTerm(std::static_pointer_cast<Ast::Binary>(value)->lhs, ctx);
 			response += getOpString(std::static_pointer_cast<Ast::Binary>(value)->op);
@@ -264,9 +264,10 @@ bool Ast::Print::check(Context<Term>& ctx) {
 Ast::Term Ast::Print::evaluate(Context<Term>& ctx) {
 	//qnt++;
 	//printLog("Evaluate Print");
-	std::cout << getStringValueOfTerm(recursiveEvaluate(this->value, ctx), ctx) << std::endl;
+	Term val = recursiveEvaluate(this->value, ctx, true);
+	std::cout << getStringValueOfTerm(val, ctx) << std::endl;
 	//qnt--;
-	return nullptr;
+	return val;
 }
 bool Ast::First::check(Context<Term>& ctx) {
 	return std::static_pointer_cast<Tuple>(this->value)->first->check(ctx);

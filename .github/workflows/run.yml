@@ -1,0 +1,21 @@
+name: build&test
+
+on:
+  push:
+    branches:
+      - main # or whichever branch you want this to run on
+
+jobs:
+  build_and_run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: clone dir
+        uses: actions/checkout@v2
+      - name: Build Docker image
+        run: |
+          docker build . -t compiler-rinha
+      - name: Test ast.json
+        run: |
+          for json_file in tests/*.json; do
+            docker run -v $PWD/$json_file:/var/rinha/source.rinha.json compiler-rinha
+          done

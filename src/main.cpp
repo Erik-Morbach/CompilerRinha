@@ -1,4 +1,3 @@
-#include <bits/chrono.h>
 #include <fstream>
 #include <iostream>
 #include <json/reader.h>
@@ -6,10 +5,12 @@
 #include "ast.h"
 #include "context.h"
 
-int main(void) {
+int main(int argc, char **argv) {
+	std::cout << argv[1] << std::endl;
+	std::ifstream fss(argv[1]);
 	Json::Value	 json;
 	Json::Reader reader;
-	reader.parse(std::cin, json);
+	reader.parse(fss, json);
 	//std::cout << json.asString() << std::endl;
 	//auto t0 = std::chrono::system_clock::now();
 	auto ast = Ast::Ast::createFromJson(json);
@@ -18,7 +19,6 @@ int main(void) {
 	//std::cout << "Create Ast in "<< std::chrono::duration_cast<std::chrono::microseconds>(t1-t0).count() << std::endl;
 
 	Context<std::shared_ptr<Ast::Node>> ctx;
-	//	ast.check(ctx); TODO
 	ast.evaluate(ctx);
 	return 0;
 }

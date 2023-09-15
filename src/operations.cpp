@@ -40,8 +40,10 @@ Ast::Term mul(Ast::Term lhs, Ast::Term rhs, Ast::Location location) {
 	return std::make_shared<Ast::Int>(value, location);
 }
 Ast::Term div(Ast::Term lhs, Ast::Term rhs, Ast::Location location) {
-	int32_t value = std::static_pointer_cast<Ast::Int>(lhs)->value;
-	value /= std::static_pointer_cast<Ast::Int>(rhs)->value;
+	int32_t num = std::static_pointer_cast<Ast::Int>(lhs)->value;
+	int32_t den = std::static_pointer_cast<Ast::Int>(rhs)->value;
+	if(den==0) throw std::runtime_error("Dividing by zero not allowed");
+	int32_t value = num / den;
 	return std::make_shared<Ast::Int>(value, location);
 }
 Ast::Term rem(Ast::Term lhs, Ast::Term rhs, Ast::Location location) {

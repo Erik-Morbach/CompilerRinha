@@ -9,30 +9,31 @@
 template <typename T>
 class Context {
 private:
+	int scope = 0;
+	std::vector<std::vector<std::string>> scopedVars;
 	std::unordered_map<std::string, std::vector<std::pair<T, int>>> vars;
-
 	void removeScopedVars(std::vector<std::pair<T, int>>& buff);
 
 public:
-	int scope = 0;
-	Context() {}
+	Context() { scopedVars.push_back({}); }
 	void enterScope();
 	void endScope();
-	void shadowVar(const std::string& var, T value);
 	void setVar(const std::string& varName, T value);
 	bool varExist(const std::string& varName);
-	T	 getVar(const std::string& varName);
+	T getVar(const std::string& varName);
 	void removeVar(const std::string& varName);
 };
 template <typename T>
 void Context<T>::enterScope() {
+	scopedVars.push_back({});
 	this->scope++;
 }
 template <typename T>
 void Context<T>::endScope() {
+	if(this->scope == 0) throw std::runtime_error("Ending not scope that does not exist");
 	this->scope--;
-	for (auto& buff : vars) {
-		removeScopedVars(buff.second);
+	for (auto& var : scopedVars.back()) {
+		removeScopedVars(vars[var]);
 	}
 }
 template <typename T>
@@ -40,18 +41,11 @@ void Context<T>::removeScopedVars(std::vector<std::pair<T, int>>& buff) {
 	while (buff.size() && buff.back().second > this->scope)
 		buff.pop_back();
 }
-
-template <typename T>
-void Context<T>::shadowVar(const std::string& var, T value) {
-	vars[var].push_back({ value, this->scope });
-}
 template <typename T>
 void Context<T>::setVar(const std::string& var, T value) {
-	while (vars[var].size() != 0 && vars[var].back().second > this->scope) {
-		vars[var].pop_back();
-	}
 	if (vars[var].size() == 0 || vars[var].back().second < this->scope) {
 		vars[var].push_back({ value, this->scope });
+		scopedVars.back().push_back(var);
 		return;
 	}
 	vars[var][vars[var].size() - 1].first = value;
@@ -69,8 +63,6 @@ void Context<T>::removeVar(const std::string& var) {
 
 template <typename T>
 T Context<T>::getVar(const std::string& var) {
-	while (vars[var].size() && vars[var].back().second > this->scope) {
-		vars[var].pop_back();
-	}
+	if(vars[var].size()==0) throw std::runtime_error("Var "+var+" not declared in scope");
 	return vars[var].back().first;
 }

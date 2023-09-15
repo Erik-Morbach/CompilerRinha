@@ -1,0 +1,3 @@
+print(fn (x) => {
+  print(x)
+})
