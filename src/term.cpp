@@ -7,15 +7,6 @@
 #include <string>
 #include <utility>
 
-/*
-static int	qnt = 0;
-static void printLog(std::string s) {
-	for (int i = 0; i < qnt; i++)
-		std::cout << "  ";
-	std::cout << s << std::endl;
-}
-*/
-
 std::string getOpString(Ast::BinaryOp op) {
 	switch (op) {
 		case Ast::Add:
@@ -80,8 +71,10 @@ std::string getStringValueOfTerm(Ast::Term value, Context<Ast::Term>& ctx) {
 				response += par.text;
 			}
 			response += ">";
+			break;
 		case Ast::CallKind:
 			response = "Call("+getStringValueOfTerm(std::static_pointer_cast<Ast::Call>(value)->callee, ctx) + ")";
+			break;
 		case Ast::BinaryKind:
 			response += getStringValueOfTerm(std::static_pointer_cast<Ast::Binary>(value)->lhs, ctx);
 			response += getOpString(std::static_pointer_cast<Ast::Binary>(value)->op);
@@ -132,32 +125,19 @@ bool Ast::Call::check(Context<Term>& ctx)  // TODO:Do better
 	return ok;
 }
 Ast::Term Ast::Call::evaluate(Context<Term>& ctx) {
-	/*qnt++;
-	//printLog(std::string("Evaluating Call with "));
-	*/
-	ctx.enterScope();
+	Context closureCtx = ctx;
 	std::shared_ptr<Function> fun;
 	if (this->callee->specification.kind == FunctionKind)
 		fun = std::static_pointer_cast<Function>(this->callee);
 	else
-		fun = std::static_pointer_cast<Function>(recursiveEvaluate(this->callee, ctx, true));
-	//printLog("Calling with sc = "+std::to_string(ctx.scope)+":");
+		fun = std::static_pointer_cast<Function>(recursiveEvaluate(this->callee, closureCtx));
 	for (int i = 0; i < this->arguments.size(); i++) {
 		Term resp;
-		resp = recursiveEvaluate(this->arguments[i], ctx);
-		// set ParameterName to resp
-		//
-		//	printLog(std::string("Set ") + fun->parameters[i].text + " = " + getStringValueOfTerm(resp, ctx));
-		//printLog(std::string("Set ") + fun->parameters[i].text + " = " + getStringValueOfTerm(resp, ctx));
-		ctx.setVar(fun->parameters[i].text, resp);
+		resp = recursiveEvaluate(this->arguments[i], closureCtx);
+		closureCtx.setVar(fun->parameters[i].text, resp);
 	}
 	Term response;
-	//printLog("Evaluating func ");
-	response = recursiveEvaluate(fun, ctx);
-	//printLog("Get " + getStringValueOfTerm(response, ctx));
-
-	ctx.endScope();
-	//qnt--;
+	response = recursiveEvaluate(fun, closureCtx, true);
 	return response;
 }
 
@@ -264,10 +244,10 @@ bool Ast::Print::check(Context<Term>& ctx) {
 Ast::Term Ast::Print::evaluate(Context<Term>& ctx) {
 	//qnt++;
 	//printLog("Evaluate Print");
-	Term val = recursiveEvaluate(this->value, ctx, true);
+	Term val = recursiveEvaluate(this->value, ctx);
 	std::cout << getStringValueOfTerm(val, ctx) << std::endl;
 	//qnt--;
-	return val;
+	return this->value;
 }
 bool Ast::First::check(Context<Term>& ctx) {
 	return std::static_pointer_cast<Tuple>(this->value)->first->check(ctx);

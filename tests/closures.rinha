@@ -1,3 +1,4 @@
-print(fn (x) => {
-  print(x)
-})
+let f1 = fn(x) => {
+	x + 2
+};
+print(f1)
